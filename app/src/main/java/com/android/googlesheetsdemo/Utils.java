@@ -6,6 +6,9 @@ import android.content.Context;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestInitializer;
 
+import java.io.File;
+import java.util.ArrayList;
+
 /**
  * Created by OPTIMUSDOM ubuntu151 on 17/11/15.
  */
@@ -25,6 +28,28 @@ public class Utils {
         dialog.setCancelable(false);
         dialog.setCanceledOnTouchOutside(false);
         return dialog;
+    }
+
+    public static void saveToLocal(ArrayList<EmployeeModel> list, Context context) {
+        EmployeeDAO employeeDAO = new EmployeeDAO(context);
+        employeeDAO.open();
+        employeeDAO.emptyTable();
+        employeeDAO.createFromArrayList(list);
+        employeeDAO.close();
+    }
+
+    public static boolean ifDatabaseExists(Context context) {
+        File database = context.getDatabasePath(DBHelper.DATABASE_NAME);
+
+        if (!database.exists()) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public static void deleteDatabase(Context context) {
+        context.deleteDatabase(DBHelper.DATABASE_NAME);
     }
 
     /**

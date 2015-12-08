@@ -20,8 +20,6 @@ import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
@@ -40,11 +38,6 @@ public class MainActivity extends AppCompatActivity {
     GoogleAccountCredential mCredential;
     ProgressDialog mProgress;
 
-    /**
-     * Create the main activity.
-     *
-     * @param savedInstanceState previously saved instance data.
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,32 +54,24 @@ public class MainActivity extends AppCompatActivity {
                 .setSelectedAccountName(settings.getString(Utils.PREF_ACCOUNT_NAME, null));
     }
 
-    /**
-     * Called whenever this activity is pushed to the foreground, such as after
-     * a call to onCreate().
-     */
     @Override
     protected void onResume() {
         super.onResume();
         if (isGooglePlayServicesAvailable()) {
-            refreshResults();
+            if (Utils.ifDatabaseExists(this)) {
+                EmployeeDAO employeeDAO = new EmployeeDAO(this);
+                employeeDAO.open();
+                setDataToList(employeeDAO.getArrayList());
+                employeeDAO.close();
+            } else {
+                refreshResults();
+            }
         } else {
             Toast.makeText(this, "Google Play Services required: " +
                     "after installing, close and relaunch this app.", Toast.LENGTH_LONG).show();
         }
     }
 
-    /**
-     * Called when an activity launched here (specifically, AccountPicker
-     * and authorization) exits, giving you the requestCode you started it with,
-     * the resultCode it returned, and any additional data from it.
-     *
-     * @param requestCode code indicating which activity result is incoming.
-     * @param resultCode  code indicating the result of the incoming
-     *                    activity result.
-     * @param data        Intent (containing result data) returned by incoming
-     *                    activity result.
-     */
     @Override
     protected void onActivityResult(
             int requestCode, int resultCode, Intent data) {
@@ -124,11 +109,6 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    /**
-     * Attempt to get a set of data from the Google Apps Script Execution API to display. If the
-     * email address isn't known yet, then call chooseAccount() method so the
-     * user can pick an account.
-     */
     private void refreshResults() {
         if (mCredential.getSelectedAccountName() == null) {
             chooseAccount();
@@ -141,20 +121,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Starts an activity in Google Play Services so the user can pick an
-     * account.
-     */
     private void chooseAccount() {
         startActivityForResult(
                 mCredential.newChooseAccountIntent(), Utils.REQUEST_ACCOUNT_PICKER);
     }
 
-    /**
-     * Checks whether the device currently has a network connection.
-     *
-     * @return true if the device has a network connection, false otherwise.
-     */
     private boolean isDeviceOnline() {
         ConnectivityManager connMgr =
                 (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -162,14 +133,6 @@ public class MainActivity extends AppCompatActivity {
         return (networkInfo != null && networkInfo.isConnected());
     }
 
-    /**
-     * Check that Google Play services APK is installed and up to date. Will
-     * launch an error dialog for the user to update Google Play Services if
-     * possible.
-     *
-     * @return true if Google Play Services is available and up to
-     * date on this device; false otherwise.
-     */
     private boolean isGooglePlayServicesAvailable() {
         final int connectionStatusCode =
                 GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
@@ -182,13 +145,6 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    /**
-     * Display an error dialog showing that Google Play Services is missing
-     * or out of date.
-     *
-     * @param connectionStatusCode code describing the presence (or lack of)
-     *                             Google Play Services on this device.
-     */
     void showGooglePlayServicesAvailabilityErrorDialog(
             final int connectionStatusCode) {
         Dialog dialog = GooglePlayServicesUtil.getErrorDialog(
@@ -198,10 +154,6 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    /**
-     * An asynchronous task that handles the Google Apps Script Execution API call.
-     * Placing the API calls in their own task ensures the UI stays responsive.
-     */
     private class MakeRequestTask extends AsyncTask<Void, Void, ArrayList<EmployeeModel>> {
         private com.google.api.services.script.Script mService = null;
         private Exception mLastError = null;
@@ -215,11 +167,6 @@ public class MainActivity extends AppCompatActivity {
                     .build();
         }
 
-        /**
-         * Background task to call Google Apps Script Execution API.
-         *
-         * @param params no parameters needed for this task.
-         */
         @Override
         protected ArrayList<EmployeeModel> doInBackground(Void... params) {
             try {
@@ -231,13 +178,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        /**
-         * Call the API to run an Apps Script function that returns a list
-         * of folders within the user's root directory on Drive.
-         *
-         * @return list of String folder names and their IDs
-         * @throws IOException
-         */
         private ArrayList<EmployeeModel> getDataFromApi()
                 throws IOException, GoogleAuthException {
             // ID of the script to call. Acquire this from the Apps Script editor,
@@ -273,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
             ArrayList<EmployeeModel> employeesList = new ArrayList();
             for (int i = 1; i < tempList.size(); i++) {
                 EmployeeModel model = new EmployeeModel();
-                model.setEmpCode(tempList.get(i).get("EmpCode"));
+                model.setEmpCode(Integer.parseInt(tempList.get(i).get("EmpCode")));
                 model.setMailId(tempList.get(i).get("OptimusMailId"));
                 model.setName(tempList.get(i).get("Name"));
                 employeesList.add(model);
@@ -282,14 +222,6 @@ public class MainActivity extends AppCompatActivity {
             return employeesList;
         }
 
-        /**
-         * Interpret an error response returned by the API and return a String
-         * summary.
-         *
-         * @param op the Operation returning an error response
-         * @return summary of error response, or null if Operation returned no
-         * error
-         */
         private String getScriptError(Operation op) {
             if (op.getError() == null) {
                 return null;
@@ -334,6 +266,7 @@ public class MainActivity extends AppCompatActivity {
             if (output == null || output.size() == 0) {
                 Toast.makeText(getApplicationContext(), "No results returned.", Toast.LENGTH_LONG).show();
             } else {
+                Utils.saveToLocal(output, getApplicationContext());
                 setDataToList(output);
             }
         }

@@ -42,7 +42,7 @@ public class EmployeeListAdapter extends RecyclerView.Adapter<EmployeeListAdapte
         });
 
         holder.textViewName.setText(employees.get(position).getName());
-        holder.textViewCode.setText(employees.get(position).getEmpCode());
+        holder.textViewCode.setText(String.valueOf(employees.get(position).getEmpCode()));
         holder.takingLunch.setChecked(employees.get(position).isLunchCheck());
     }
 
@@ -55,6 +55,9 @@ public class EmployeeListAdapter extends RecyclerView.Adapter<EmployeeListAdapte
         super.onAttachedToRecyclerView(recyclerView);
     }
 
+    public ArrayList<EmployeeModel> getLunchEmployees() {
+        return employees;
+    }
     public class EmployeeListViewHolder extends RecyclerView.ViewHolder {
 
         TextView textViewName;

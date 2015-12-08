@@ -193,6 +193,7 @@ public class CommitClass {
             mProgress.hide();
             if (result == 1) {
                 Toast.makeText(context, "Successful", Toast.LENGTH_LONG).show();
+                Utils.deleteDatabase(context);
                 context.startActivity(new Intent(context, MainActivity.class));
             } else {
                 Toast.makeText(context, "Final Error", Toast.LENGTH_LONG).show();

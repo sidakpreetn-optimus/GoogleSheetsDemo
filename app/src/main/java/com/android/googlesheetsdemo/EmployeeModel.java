@@ -8,18 +8,18 @@ import android.os.Parcelable;
  */
 public class EmployeeModel implements Parcelable {
 
-    public String EmpCode;
+    public int EmpCode;
     public String Name;
     public String MailId;
     // for checkbox state
     public boolean lunchCheck;
     // for counting total users of the day
 
-    public String getEmpCode() {
+    public int getEmpCode() {
         return EmpCode;
     }
 
-    public void setEmpCode(String empCode) {
+    public void setEmpCode(int empCode) {
         EmpCode = empCode;
     }
 
@@ -51,7 +51,7 @@ public class EmployeeModel implements Parcelable {
     }
 
     protected EmployeeModel(Parcel in) {
-        EmpCode = in.readString();
+        EmpCode = in.readInt();
         Name = in.readString();
         MailId = in.readString();
         lunchCheck = in.readByte() != 0x00;
@@ -64,7 +64,7 @@ public class EmployeeModel implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(EmpCode);
+        dest.writeInt(EmpCode);
         dest.writeString(Name);
         dest.writeString(MailId);
         dest.writeByte((byte) (lunchCheck ? 0x01 : 0x00));
