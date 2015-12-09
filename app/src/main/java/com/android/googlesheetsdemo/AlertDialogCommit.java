@@ -2,16 +2,14 @@ package com.android.googlesheetsdemo;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 
 /**
  * Created by OPTIMUSDOM ubuntu151 on 12/11/15.
  */
-public class AlertDialogClass extends DialogFragment {
+public class AlertDialogCommit extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {

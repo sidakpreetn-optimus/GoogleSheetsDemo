@@ -31,11 +31,8 @@ public class Utils {
     }
 
     public static void saveToLocal(ArrayList<EmployeeModel> list, Context context) {
-        EmployeeDAO employeeDAO = new EmployeeDAO(context);
-        employeeDAO.open();
-        employeeDAO.emptyTable();
-        employeeDAO.createFromArrayList(list);
-        employeeDAO.close();
+        EmployeeDAO.emptyTable(context);
+        EmployeeDAO.createFromArrayList(list, context);
     }
 
     public static boolean ifDatabaseExists(Context context) {

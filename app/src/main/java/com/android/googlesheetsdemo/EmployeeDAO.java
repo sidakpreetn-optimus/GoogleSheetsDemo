@@ -3,7 +3,6 @@ package com.android.googlesheetsdemo;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
 import java.util.ArrayList;
@@ -13,22 +12,10 @@ import java.util.ArrayList;
  */
 public class EmployeeDAO {
 
-    SQLiteDatabase database;
-    DBHelper dbHelper;
+    public static void createFromArrayList(ArrayList<EmployeeModel> list, Context context) {
 
-    EmployeeDAO(Context context) {
-        dbHelper = new DBHelper(context);
-    }
-
-    public void open() throws SQLException {
-        database = dbHelper.getWritableDatabase();
-    }
-
-    public void close() {
-        dbHelper.close();
-    }
-
-    public void createFromArrayList(ArrayList<EmployeeModel> list) {
+        DBHelper helper = new DBHelper(context);
+        SQLiteDatabase database = helper.getWritableDatabase();
 
         for (EmployeeModel item : list) {
             ContentValues content = new ContentValues();
@@ -42,13 +29,17 @@ public class EmployeeDAO {
             }
             database.insert(DBHelper.TABLE_EMPLOYEES, null, content);
         }
+
+        helper.close();
     }
 
-    public ArrayList<EmployeeModel> getArrayList() {
+    public static ArrayList<EmployeeModel> getArrayList(Context context) {
+
+        DBHelper helper = new DBHelper(context);
+        SQLiteDatabase database = helper.getWritableDatabase();
+
         ArrayList<EmployeeModel> employess = new ArrayList();
-
         Cursor cursor = database.rawQuery("SELECT * FROM " + DBHelper.TABLE_EMPLOYEES, null);
-
         EmployeeModel employee;
 
         if (cursor.moveToFirst()) {
@@ -67,10 +58,17 @@ public class EmployeeDAO {
             } while (cursor.moveToNext());
         }
         cursor.close();
+        helper.close();
         return employess;
     }
 
-    public void emptyTable() {
+    public static void emptyTable(Context context) {
+
+        DBHelper helper = new DBHelper(context);
+        SQLiteDatabase database = helper.getWritableDatabase();
+
         database.execSQL("DELETE FROM " + DBHelper.TABLE_EMPLOYEES);
+
+        helper.close();
     }
 }

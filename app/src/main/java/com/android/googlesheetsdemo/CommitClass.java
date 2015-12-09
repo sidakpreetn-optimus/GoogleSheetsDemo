@@ -39,7 +39,7 @@ public class CommitClass {
     }
 
     void setupInit() {
-        // Initialize credentials and service object.
+
         mProgress = Utils.getProgressDialog(context, "Loading...");
         SharedPreferences settings = context.getSharedPreferences(Utils.PREF_APP, Context.MODE_PRIVATE);
         mCredential = GoogleAccountCredential.usingOAuth2(
@@ -56,11 +56,6 @@ public class CommitClass {
         }
     }
 
-    /**
-     * Checks whether the device currently has a network connection.
-     *
-     * @return true if the device has a network connection, false otherwise.
-     */
     private boolean isDeviceOnline() {
         ConnectivityManager connMgr =
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -68,10 +63,6 @@ public class CommitClass {
         return (networkInfo != null && networkInfo.isConnected());
     }
 
-    /**
-     * An asynchronous task that handles the Google Apps Script Execution API call.
-     * Placing the API calls in their own task ensures the UI stays responsive.
-     */
     private class MakeRequestTask extends AsyncTask<Void, Void, Integer> {
         private com.google.api.services.script.Script mService = null;
         private Exception mLastError = null;
@@ -85,11 +76,6 @@ public class CommitClass {
                     .build();
         }
 
-        /**
-         * Background task to call Google Apps Script Execution API.
-         *
-         * @param params no parameters needed for this task.
-         */
         @Override
         protected Integer doInBackground(Void... params) {
             try {
@@ -102,63 +88,36 @@ public class CommitClass {
             }
         }
 
-        /**
-         * Call the API to run an Apps Script function that returns a list
-         * of folders within the user's root directory on Drive.
-         *
-         * @return list of String folder names and their IDs
-         * @throws IOException
-         */
         private Integer postDataToApi()
                 throws IOException, GoogleAuthException {
-            // ID of the script to call. Acquire this from the Apps Script editor,
-            // under Publish > Deploy as API executable.
+
             ArrayList<Object> parameterList = EmployeesLunchActivity.getLunchUsersList();
 
             String scriptId = "McLYqTshBgAhX97yJv41K_dYBFPxhiUIF";
 
-            // Create an execution request object.
             ExecutionRequest request = new ExecutionRequest()
                     .setFunction("addParameter")
                     .setParameters(parameterList)
                     .setDevMode(true);
 
-            // Make the request.
             Operation op =
                     mService.scripts().run(scriptId, request).execute();
 
-            // Print results of request.
             if (op.getError() != null) {
                 throw new IOException(getScriptError(op));
             }
             if (op.getResponse() != null) {
-                // The result provided by the API needs to be cast into
-                // the correct type, based upon what types the Apps Script
-                // function returns. Here, the function returns an Apps
-                // Script Object with String keys and values, so must be
-                // cast into a Java Map (folderSet).
+
                 return 1;
             }
             return 0;
         }
 
-        /**
-         * Interpret an error response returned by the API and return a String
-         * summary.
-         *
-         * @param op the Operation returning an error response
-         * @return summary of error response, or null if Operation returned no
-         * error
-         */
         private String getScriptError(Operation op) {
             if (op.getError() == null) {
                 return null;
             }
 
-            // Extract the first (and only) set of error details and cast as a Map.
-            // The values of this map are the script's 'errorMessage' and
-            // 'errorType', and an array of stack trace elements (which also need to
-            // be cast as Maps).
             Map<String, Object> detail = op.getError().getDetails().get(0);
             List<Map<String, Object>> stacktrace =
                     (List<Map<String, Object>>) detail.get("scriptStackTraceElements");
@@ -168,8 +127,7 @@ public class CommitClass {
             sb.append(detail.get("errorMessage"));
 
             if (stacktrace != null) {
-                // There may not be a stacktrace if the script didn't start
-                // executing.
+
                 sb.append("\nScript error stacktrace:");
                 for (Map<String, Object> elem : stacktrace) {
                     sb.append("\n  ");
@@ -181,7 +139,6 @@ public class CommitClass {
             sb.append("\n");
             return sb.toString();
         }
-
 
         @Override
         protected void onPreExecute() {

@@ -48,7 +48,7 @@ public class EmployeesLunchActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "No employees selected", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                new AlertDialogClass().show(getSupportFragmentManager(), "Confirmation");
+                new AlertDialogCommit().show(getSupportFragmentManager(), "Confirmation");
             }
         });
     }

@@ -59,10 +59,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         if (isGooglePlayServicesAvailable()) {
             if (Utils.ifDatabaseExists(this)) {
-                EmployeeDAO employeeDAO = new EmployeeDAO(this);
-                employeeDAO.open();
-                setDataToList(employeeDAO.getArrayList());
-                employeeDAO.close();
+                setDataToList(EmployeeDAO.getArrayList(this));
             } else {
                 refreshResults();
             }
